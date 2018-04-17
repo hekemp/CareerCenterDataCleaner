@@ -104,13 +104,13 @@
       progress.style.width = '100%';
       progress.textContent = '100%';
       setTimeout("document.getElementById('progress_bar').className='';", 2000);
+      console.log(reader.result);
     }
 
 
 
     // Read in the image file as a binary string.
-    let x = reader.readAsText(evt.target.files[0]);
-    console.log(reader.result);
+    reader.readAsText(evt.target.files[0]);
 
 
 
