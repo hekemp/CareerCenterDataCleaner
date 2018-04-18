@@ -10,6 +10,8 @@
 
   <link rel="stylesheet" href="css/styles.css">
 
+
+
 </head>
 
 
@@ -46,13 +48,28 @@
   }
 </style>
 
-<input type="file" id="files" name="file" />
+File To Change: <input type="file" id="files" name="file" />
+CSV: <input type="file" id="keys" name="key" />
 <button onclick="abortRead();">Cancel read</button>
 <div id="progress_bar"><div class="percent">0%</div></div>
+
+Row: <input type="text" name="RowToChange" id="RowToChange" value=""><br>
+
+<button onclick="startCleaning();">Start Cleaning</button><br>
+
+New name of file: <input type="text" name="FileName" id="FileName" value="">.csv<br>
+<button onclick="downloadFile();">Download File</button><br>
+Note: This file is downloaded to your Downloads folder.
 
 <script>
   var reader;
   var progress = document.querySelector('.percent');
+
+  var readText;
+  var keyText;
+  var rowChanging;
+
+  var readInList;
 
   function abortRead() {
     reader.abort();
@@ -85,6 +102,39 @@
     }
   }
 
+  function handleKeysSelect(evt) {
+    // Reset progress indicator on new file selection.
+    progress.style.width = '0%';
+    progress.textContent = '0%';
+
+    reader = new FileReader();
+    reader.onerror = errorHandler;
+    reader.onprogress = updateProgress;
+    reader.onabort = function(e) {
+      alert('File read cancelled');
+    };
+    reader.onloadstart = function(e) {
+      document.getElementById('progress_bar').className = 'loading';
+    };
+    reader.onload = function(e) {
+      // Ensure that the progress bar displays 100% at the end.
+      progress.style.width = '100%';
+      progress.textContent = '100%';
+      setTimeout("document.getElementById('progress_bar').className='';", 2000);
+
+
+      keyText = reader.result;
+
+    }
+
+
+
+    // Read in the image file as a binary string.
+    reader.readAsText(evt.target.files[0]);
+
+
+  }
+
   function handleFileSelect(evt) {
     // Reset progress indicator on new file selection.
     progress.style.width = '0%';
@@ -104,7 +154,10 @@
       progress.style.width = '100%';
       progress.textContent = '100%';
       setTimeout("document.getElementById('progress_bar').className='';", 2000);
-      console.log(reader.result);
+
+
+      readText = reader.result;
+
     }
 
 
@@ -113,12 +166,95 @@
     reader.readAsText(evt.target.files[0]);
 
 
-
-
   }
 
   document.getElementById('files').addEventListener('change', handleFileSelect, false);
+  document.getElementById('keys').addEventListener('change', handleKeysSelect, false);
+
+
+
+  //download(reader.result, "test", "text/csv");
+
+  function download(data, filename, type) {
+    var file = new Blob([data], {type: type});
+    if (window.navigator.msSaveOrOpenBlob) // IE10+
+        window.navigator.msSaveOrOpenBlob(file, filename);
+    else { // Others
+        var a = document.createElement("a"),
+                url = URL.createObjectURL(file);
+        a.href = url;
+        a.download = filename;
+        document.body.appendChild(a);
+        a.click();
+        setTimeout(function() {
+            document.body.removeChild(a);
+            window.URL.revokeObjectURL(url);
+        }, 0);
+      }
+    }
+
+    var mapLetterValue = function(val) {
+      var base = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ', i, j, result = 0;
+
+      for (i = 0, j = val.length - 1; i < val.length; i += 1, j -= 1) {
+        result += Math.pow(base.length, j) * (base.indexOf(val[i]) + 1);
+      }
+
+      return result;
+    };
+
+    function startCleaning(){
+
+      // If a value is out of range, then it's undefinded, if I val is undefined, ignore it
+      // [var].map(mapLetterValue);
+
+      var rowToChange = document.getElementById("RowToChange").value;
+      rowToChange = rowToChange.toUpperCase();
+
+      rowChanging = [ rowToChange ].map(mapLetterValue)[0] - 1;
+
+      if(readText != null && keyText != null && (rowChanging != "" && rowChanging != null) ){
+        console.log(readText);
+        console.log(keyText);
+
+        console.log(rowToChange);
+
+      }
+
+    }
+
+    function breakReadText(){
+
+      var splitByLine = readText.split(/\r?\n/g);
+      var splitByComma = [];
+      for(var i = 0; i < splitByLine.length; i++){
+        splitByComma[i] = splitByLine[i].split(',');
+
+      }
+      readInList = splitByComma;
+
+    }
+
+    function reassembleReadText(){
+      var splitByLine = [];
+      for(var i = 0; i < readInList.length; i++){
+        splitByLine[i] = readInList[i].join(',');
+      }
+      return splitByLine.join('\n');
+    }
+
+    function downloadFile(){
+      var fileName = document.getElementById("FileName").value;
+      if(fileName != "" && ( readInList != [] && readInList != null ) ) {
+        var newText = reassembleReadText();
+        download(newText, fileName, "text/csv");
+      }
+
+    }
+
 </script>
+
+
 
 </body>
 </html>
