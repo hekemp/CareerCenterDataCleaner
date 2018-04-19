@@ -9,6 +9,8 @@
   <meta name="author" content="Pomerantz Career Center">
 
   <link rel="stylesheet" href="css/styles.css">
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
+  <script src="https://code.jquery.com/jquery-3.2.1.min.js"></script>
 
 
 
@@ -60,6 +62,10 @@ New name of file: <input type="text" name="FileName" id="FileName" value="">.csv
 <button onclick="downloadFile();">Download File</button><br>
 Note: This file is downloaded to your Downloads folder.
 
+New name of keys file: <input type="text" name="KeyFileName" id="KeyFileName" value="">.csv<br>
+<button onclick="downloadKeyFile();">Download KeyFile</button><br>
+Note: This file is downloaded to your Downloads folder.
+
 <script>
   var reader;
   var progress = document.querySelector('.percent');
@@ -73,6 +79,9 @@ Note: This file is downloaded to your Downloads folder.
 
   var foundKeyValues = {};
   var toAssign = {};
+  var index = 0;
+
+  var names;
 
   function abortRead() {
     reader.abort();
@@ -206,10 +215,21 @@ Note: This file is downloaded to your Downloads folder.
       return result;
     };
 
+    function isEmpty(ob){
+        for(var i in ob){ return false;}
+      return true;
+    }
+
     function startCleaning(){
 
-      // If a value is out of range, then it's undefinded, if I val is undefined, ignore it
-      // [var].map(mapLetterValue);
+      readInList = [];
+      keyInList = [];
+
+      foundKeyValues = {};
+      toAssign = {};
+      index = 0;
+
+      names = [];
 
       var rowToChange = document.getElementById("RowToChange").value;
       rowToChange = rowToChange.toUpperCase();
@@ -246,17 +266,104 @@ Note: This file is downloaded to your Downloads folder.
         }
       }
 
+      assignKeysToNames();
+
+      if(isEmpty(toAssign)){
+        $("#name-chooser").text("Cleaning complete!");
+      }
+      else{
+        $("#name-chooser").text(names[0]);
+        populateChoices();
+      }
+
+
     }
 
-    /* To get keys:
-    for(item in toAssign){
-      console.log(item);
-    }
+    /*
       To Get Items:
       for(item in toAssign){
         console.log(toAssign[item]);
       }
     */
+
+    function assignKeysToNames(){
+      names = [];
+      for(item in toAssign){
+        names[names.length] = item;
+      }
+    }
+
+    function nextChoice(companyPicked) {
+
+      console.log(toAssign);
+      console.log(toAssign[names[index]]);
+      var newIndex;
+      for(var i = 0; i < toAssign[names[index]].length; i++){
+        newIndex = toAssign[names[index]][i];
+        readInList[newIndex][rowChanging] = companyPicked;
+      }
+
+      for(var i = 0; i < keyInList.length; i++){
+        if(keyInList[i][0] == companyPicked){
+          keyInList[i][keyInList[i].length] = names[index];
+          i = keyInList.length;
+        }
+      }
+
+      if(index < names.length - 1) {
+        index++;
+        $("#name-chooser").text(names[index]);
+      } else {
+        $("#name-chooser").text("You're Done!");
+        toAssign = {}
+        index = 0;
+        document.getElementById("choices").innerHTML = "";
+        document.getElementById("instruction").innerHTML = '<h3 id="instruction" class="text-muted"></h3>';
+
+      }
+      console.log(readInList);
+      return false;
+    }
+
+    function nextChoiceAdd() {
+
+      keyInList[keyInList.length] = [ document.getElementById("customInput").value ];
+      populateChoices();
+
+      var newIndex;
+      for(var i = 0; i < toAssign[names[index]].length; i++){
+        newIndex = toAssign[names[index]][i];
+        readInList[newIndex][rowChanging] = document.getElementById("customInput").value
+      }
+
+      if(index < names.length - 1) {
+        index++;
+        $("#name-chooser").text(names[index]);
+      } else {
+        $("#name-chooser").text("You're Done!");
+        toAssign = {}
+        index = 0;
+        document.getElementById("choices").innerHTML = "";
+        document.getElementById("instruction").innerHTML = '<h3 id="instruction" class="text-muted"></h3>';
+      }
+
+      document.getElementById("customInput").value  = "";
+
+      return false;
+    }
+
+    function populateChoices(){
+      document.getElementById("choices").innerHTML = "";
+      for(var i = 0; i < keyInList.length; i++){
+        if(keyInList[i][0] != ""){
+          document.getElementById("choices").innerHTML += '<div class="form-group"><button class="btn" onclick="return nextChoice(\'' + keyInList[i][0] + '\');">' + keyInList[i][0] + '</button></div>';
+        }
+
+      }
+
+      document.getElementById("choices").innerHTML += '<div class="form-group"><label for="customInput">Company Name:</label><input type="text" class="form-control" id="customInput" placeholder="New company name" /></div><button class="btn btn-primary" onclick="return nextChoiceAdd();">Submit</button>';
+      document.getElementById("instruction").innerHTML = '<h3 id="instruction" class="text-muted">Select a canonical company name:</h3>';
+    }
 
     function findValue(itemToLocate){
 
@@ -316,10 +423,31 @@ Note: This file is downloaded to your Downloads folder.
         var newText = reassembleReadText();
         download(newText, fileName, "text/csv");
       }
+    }
 
+    function downloadKeyFile(){
+      var fileName = document.getElementById("KeyFileName").value;
+      if(fileName != "" && ( keyInList != [] && keyInList != null ) ) {
+        var newText = reassembleKeyText();
+        download(newText, fileName, "text/csv");
+      }
     }
 
 </script>
+
+<div class="container">
+  <form>
+    <h1 id="name-chooser">Click "Start Cleaning" to proceed...</h1>
+    <h3 id="instruction" class="text-muted"></h3>
+    <div id="choices">
+
+    </div>
+
+  </form>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js" integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q" crossorigin="anonymous"></script>
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js" integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl" crossorigin="anonymous"></script>
 
 
 
