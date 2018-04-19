@@ -8,10 +8,11 @@
   <meta name="description" content="Pomerantz Career Center Data Cleaner">
   <meta name="author" content="Pomerantz Career Center">
 
-  <link rel="stylesheet" href="css/styles.css">
+
   <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
   <script src="https://code.jquery.com/jquery-3.2.1.min.js"></script>
 
+  <link rel="stylesheet" href="css/styles.css">
 
 
 </head>
@@ -28,43 +29,43 @@
   }
 </script>
 
-<style>
-  #progress_bar {
-    margin: 10px 0;
-    padding: 3px;
-    border: 1px solid #000;
-    font-size: 14px;
-    clear: both;
-    opacity: 0;
-    -moz-transition: opacity 1s linear;
-    -o-transition: opacity 1s linear;
-    -webkit-transition: opacity 1s linear;
-  }
-  #progress_bar.loading {
-    opacity: 1.0;
-  }
-  #progress_bar .percent {
-    background-color: #99ccff;
-    height: auto;
-    width: 0;
-  }
-</style>
+<img src="images/Banner.png" class="banner" alt="Data Cleaner">
 
-File To Change: <input type="file" id="files" name="file" />
-CSV: <input type="file" id="keys" name="key" />
-<div id="progress_bar"><div class="percent">0%</div></div>
+    <div class="content">
+      <div class="row">
+            <div class="col-xs-4 col-sm-4 col-md-4">
+              <div class ="form-group">
+                <label>Input File</label>
+                <input type="file" id="files" name="file" />
+                <small id="inputHelp" class="form-text text-muted">Accepted File Types: .csv</small>
+              </div>
+            </div>
+            <div class="col-xs-4 col-sm-4 col-md-4">
+              <div class ="form-group">
+                <label>Key File</label>
+                <input type="file" id="keys" name="key" />
+                <small id="keysHelp" class="form-text text-muted">Accepted File Types: .csv</small>
+              </div>
+            </div>
+            <div class="col-xs-4 col-sm-4 col-md-4">
+              <div class ="form-group">
+                <label>Column to Clean</label>
+                <input type="text" name="ColumnToChange" id="ColumnToChange" value="">
+                <small id="nameHelp" class="form-text text-muted">Use the formating from Excel for your input file (Ex. A, B, AA, or AB)</small>
+              </div>
+            </div>
+        </div>
+        <div class="row">
+          <div class="col-lg-12">
+            <div id="progress_bar"><div class="percent">0%</div></div>
+          </div>
+        </div>
+        <div class="row">
+          <div class="col-lg-12">
+              <button type="button" class="btn btn-primary btn-block" onclick="startCleaning();">Start Cleaning</button>
+          </div>
+        </div>
 
-Row: <input type="text" name="RowToChange" id="RowToChange" value=""><br>
-
-<button onclick="startCleaning();">Start Cleaning</button><br>
-
-New name of file: <input type="text" name="FileName" id="FileName" value="">.csv<br>
-<button onclick="downloadFile();">Download File</button><br>
-Note: This file is downloaded to your Downloads folder.
-
-New name of keys file: <input type="text" name="KeyFileName" id="KeyFileName" value="">.csv<br>
-<button onclick="downloadKeyFile();">Download KeyFile</button><br>
-Note: This file is downloaded to your Downloads folder.
 
 <script>
   var reader;
@@ -72,7 +73,7 @@ Note: This file is downloaded to your Downloads folder.
 
   var readText;
   var keyText;
-  var rowChanging;
+  var columnChanging;
 
   var readInList = [];
   var keyInList = [];
@@ -136,6 +137,8 @@ Note: This file is downloaded to your Downloads folder.
 
 
       keyText = reader.result;
+      breakKeyText();
+
 
     }
 
@@ -143,6 +146,7 @@ Note: This file is downloaded to your Downloads folder.
 
     // Read in the image file as a binary string.
     reader.readAsText(evt.target.files[0]);
+
 
 
   }
@@ -169,6 +173,7 @@ Note: This file is downloaded to your Downloads folder.
 
 
       readText = reader.result;
+      breakReadText();
 
     }
 
@@ -176,6 +181,7 @@ Note: This file is downloaded to your Downloads folder.
 
     // Read in the image file as a binary string.
     reader.readAsText(evt.target.files[0]);
+
 
 
   }
@@ -222,37 +228,31 @@ Note: This file is downloaded to your Downloads folder.
 
     function startCleaning(){
 
-      readInList = [];
-      keyInList = [];
-
       foundKeyValues = {};
       toAssign = {};
       index = 0;
 
       names = [];
 
-      var rowToChange = document.getElementById("RowToChange").value;
-      rowToChange = rowToChange.toUpperCase();
+      var columnToChange = document.getElementById("ColumnToChange").value;
+      columnToChange = columnToChange.toUpperCase();
 
-      rowChanging = [ rowToChange ].map(mapLetterValue)[0] - 1;
+      columnChanging = [ columnToChange ].map(mapLetterValue)[0] - 1;
 
-      if(readText != null && keyText != null && rowChanging != null ){
-
-        breakReadText();
-        breakKeyText();
+      if(readText != null && keyText != null && columnChanging != null ){
 
         var currentValue;
         for(var i = 1; i < readInList.length; i++) {
-          currentValue = readInList[i][rowChanging];
+          currentValue = readInList[i][columnChanging];
 
-          if (currentValue == ""); // empty row
+          if (currentValue == ""); // empty column
           else if ((foundKeyValues[currentValue] != "" && foundKeyValues[currentValue] != null )) { // we already know the value
-            readInList[i][rowChanging] = foundKeyValues[currentValue];
+            readInList[i][columnChanging] = foundKeyValues[currentValue];
           } else {
               var locatedValue = findValue(currentValue);
               if (locatedValue != ""){ // Item was assigned a value
                 foundKeyValues[currentValue] = locatedValue;
-                readInList[i][rowChanging] = locatedValue;
+                readInList[i][columnChanging] = locatedValue;
               }
               else { // Item hasn't been assigned yet
                 if(toAssign[currentValue] != "" && toAssign[currentValue] != null) { // Item has been found elsewhere
@@ -300,7 +300,7 @@ Note: This file is downloaded to your Downloads folder.
       var newIndex;
       for(var i = 0; i < toAssign[names[index]].length; i++){
         newIndex = toAssign[names[index]][i];
-        readInList[newIndex][rowChanging] = companyPicked;
+        readInList[newIndex][columnChanging] = companyPicked;
       }
 
       for(var i = 0; i < keyInList.length; i++){
@@ -318,7 +318,7 @@ Note: This file is downloaded to your Downloads folder.
         toAssign = {}
         index = 0;
         document.getElementById("choices").innerHTML = "";
-        document.getElementById("instruction").innerHTML = '<h3 id="instruction" class="text-muted"></h3>';
+        document.getElementById("instruction").innerHTML = '<h3 id="instruction" class="text-muted">Download your files now, or continue cleaning.</h3>';
 
       }
       console.log(readInList);
@@ -327,14 +327,17 @@ Note: This file is downloaded to your Downloads folder.
 
     function nextChoiceAdd() {
 
-      keyInList[keyInList.length] = [ document.getElementById("customInput").value ];
+      var theirValue = document.getElementById("customInput").value;
+      keyInList[keyInList.length] = [ theirValue ];
       populateChoices();
 
       var newIndex;
       for(var i = 0; i < toAssign[names[index]].length; i++){
+
         newIndex = toAssign[names[index]][i];
-        readInList[newIndex][rowChanging] = document.getElementById("customInput").value
+        readInList[newIndex][columnChanging] = theirValue;
       }
+      console.log(theirValue);
 
       if(index < names.length - 1) {
         index++;
@@ -344,7 +347,7 @@ Note: This file is downloaded to your Downloads folder.
         toAssign = {}
         index = 0;
         document.getElementById("choices").innerHTML = "";
-        document.getElementById("instruction").innerHTML = '<h3 id="instruction" class="text-muted"></h3>';
+        document.getElementById("instruction").innerHTML = '<h3 id="instruction" class="text-muted">Download your files now, or continue cleaning.</h3>';
       }
 
       document.getElementById("customInput").value  = "";
@@ -437,7 +440,7 @@ Note: This file is downloaded to your Downloads folder.
 
 <div class="container">
   <form>
-    <h1 id="name-chooser">Click "Start Cleaning" to proceed...</h1>
+    <h1 id="name-chooser"></h1>
     <h3 id="instruction" class="text-muted"></h3>
     <div id="choices">
 
@@ -446,10 +449,39 @@ Note: This file is downloaded to your Downloads folder.
   </form>
 </div>
 
+<div class="row">
+  <div class="col-xs-6 col-sm-6 col-md-6">
+    <div class ="form-group">
+      <label>New File Name: </label>
+      <input type="text" name="FileName" id="FileName" value="">.csv
+    </div>
+  </div>
+  <div class="col-xs-6 col-sm-6 col-md-6">
+    <div class ="form-group">
+      <button onclick="downloadFile();">Download New File</button><br>
+      <small id="fileHelp" class="form-text text-muted">When you click this button, a file with the name you specified in "New File Name" will be saved to your Downloads folder.</small>
+    </div>
+  </div>
+</div>
+<div class="row">
+  <div class="col-xs-6 col-sm-6 col-md-6">
+    <div class ="form-group">
+      <label>Updated Key File Name: </label>
+      <input type="text" name="KeyFileName" id="KeyFileName" value="">.csv
+    </div>
+  </div>
+  <div class="col-xs-6 col-sm-6 col-md-6">
+    <div class ="form-group">
+      <button onclick="downloadKeyFile();">Download Key File</button>
+      <small id="fileHelp2" class="form-text text-muted">When you click this button, a file with the name you specified in "Updated Key File Name" will be saved to your Downloads folder.</small>
+    </div>
+  </div>
+</div>
+
 <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js" integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q" crossorigin="anonymous"></script>
 <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js" integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl" crossorigin="anonymous"></script>
 
-
+</div>
 
 </body>
 </html>
