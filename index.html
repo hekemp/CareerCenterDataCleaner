@@ -50,7 +50,6 @@
 
 File To Change: <input type="file" id="files" name="file" />
 CSV: <input type="file" id="keys" name="key" />
-<button onclick="abortRead();">Cancel read</button>
 <div id="progress_bar"><div class="percent">0%</div></div>
 
 Row: <input type="text" name="RowToChange" id="RowToChange" value=""><br>
@@ -69,7 +68,11 @@ Note: This file is downloaded to your Downloads folder.
   var keyText;
   var rowChanging;
 
-  var readInList;
+  var readInList = [];
+  var keyInList = [];
+
+  var foundKeyValues = {};
+  var toAssign = {};
 
   function abortRead() {
     reader.abort();
@@ -213,14 +216,58 @@ Note: This file is downloaded to your Downloads folder.
 
       rowChanging = [ rowToChange ].map(mapLetterValue)[0] - 1;
 
-      if(readText != null && keyText != null && (rowChanging != "" && rowChanging != null) ){
-        console.log(readText);
-        console.log(keyText);
+      if(readText != null && keyText != null && rowChanging != null ){
 
-        console.log(rowToChange);
+        breakReadText();
+        breakKeyText();
 
+        var currentValue;
+        for(var i = 1; i < readInList.length; i++) {
+          currentValue = readInList[i][rowChanging];
+
+          if (currentValue == ""); // empty row
+          else if ((foundKeyValues[currentValue] != "" && foundKeyValues[currentValue] != null )) { // we already know the value
+            readInList[i][rowChanging] = foundKeyValues[currentValue];
+          } else {
+              var locatedValue = findValue(currentValue);
+              if (locatedValue != ""){ // Item was assigned a value
+                foundKeyValues[currentValue] = locatedValue;
+                readInList[i][rowChanging] = locatedValue;
+              }
+              else { // Item hasn't been assigned yet
+                if(toAssign[currentValue] != "" && toAssign[currentValue] != null) { // Item has been found elsewhere
+                  toAssign[currentValue][toAssign[currentValue].length] = i;
+                }
+                else { // This is the first time we've found this item
+                  toAssign[currentValue] = [ i ];
+                }
+              }
+          }
+        }
       }
 
+    }
+
+    /* To get keys:
+    for(item in toAssign){
+      console.log(item);
+    }
+      To Get Items:
+      for(item in toAssign){
+        console.log(toAssign[item]);
+      }
+    */
+
+    function findValue(itemToLocate){
+
+      for(var i = 0; i < keyInList.length; i++) {
+        for(var j = 0; j < keyInList[i].length; j++){
+          if (keyInList[i][j] == itemToLocate){
+            return keyInList[i][0];
+          }
+        }
+      }
+      return "";
     }
 
     function breakReadText(){
@@ -235,12 +282,32 @@ Note: This file is downloaded to your Downloads folder.
 
     }
 
+    function breakKeyText(){
+      var splitByLine = keyText.split(/\r?\n/g);
+      var splitByComma = [];
+      for(var i = 0; i < splitByLine.length; i++){
+        splitByComma[i] = splitByLine[i].split(',');
+
+      }
+      keyInList = splitByComma;
+
+    }
+
     function reassembleReadText(){
       var splitByLine = [];
       for(var i = 0; i < readInList.length; i++){
         splitByLine[i] = readInList[i].join(',');
       }
       return splitByLine.join('\n');
+    }
+
+    function reassembleKeyText(){
+      var splitByLine = [];
+      for(var i = 0; i < keyInList.length; i++){
+        splitByLine[i] = keyInList[i].join(',');
+      }
+      return splitByLine.join('\n');
+
     }
 
     function downloadFile(){
