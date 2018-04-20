@@ -32,6 +32,71 @@
 <img src="images/Banner.png" class="banner" alt="Data Cleaner">
 
     <div class="content">
+
+      <h3>Instructions</h3>
+      <button class="accordion">Getting Set Up</button>
+          <div class="panel">
+            <ul style="list-style-type:circle">
+              <li>Coffee</li>
+              <li>Tea</li>
+              <li>Milk</li>
+              <li>Milk</li>
+            </ul>
+            <p>Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.</p>
+          </div>
+
+          <button class="accordion">Starting The Cleaning Process</button>
+          <div class="panel">
+            <ul style="list-style-type:circle">
+              <li>Coffee</li>
+              <li>Tea</li>
+              <li>Milk</li>
+              <li>Milk</li>
+            </ul>
+            <p>Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.</p>
+          </div>
+
+          <button class="accordion">Additional Cleaning Information</button>
+          <div class="panel">
+
+            <ul style="list-style-type:circle">
+              <li>You can continue to clean your input file by typing in a new column and then hitting "Start Cleaning" again.</li><br/>
+              <li>When you click start cleaning, all matchings from the keys file (and any other matches made in previous cleanings during this file session) will be applied instantly.</li><br/>
+              <li>So long as you do not upload a new input file or key file, the matches that you've made will remain during your current session. Changing the file(s) will reset the information for that category. For example, updating your input file will reset what's read in to change, but will not reset your key-value pairs. Be sure to download your changed files before uploading a new one.</li><br/>
+              <li>If you make a mistake and want to start over again with the same data file, just reupload that file and key file and click "Start Cleaning" again.</li>
+            </ul>
+          </div>
+
+          <button class="accordion">Saving Your Files</button>
+          <div class="panel">
+            <ul style="list-style-type:circle">
+              <li>Type the name of the file you wish to save your cleaned data into (without the extension) in the "New File Name" box. For example, if I want the file "2018 Data.csv", I would type "2018 Data" into the "New File Name" box, and then click "Download New File". The file will then be downloaded to your Downloads folder, or a window will prompt you to do so, depending on your browser.</li><br/>
+              <li>Type the name of the file you wish to save your updated key-value pairs into (without the extension) in the "Updated Key File Name" box. For example, if I want the file "2018 Data Keys.csv", I would type "2018 Data Keys" in the "Updated Key File Name" box, and then click "Download Key File".</li>
+            </ul>
+            <p></p>
+            <p></p>
+          </div>
+
+          <p> <b>Reminder:</b> Be sure to save your new data file and updated key file after you finish cleaning the data. Your uploaded files <i>are not changed</i> and your changes are not kept between sessions.</p>
+
+          <script>
+          var acc = document.getElementsByClassName("accordion");
+          var i;
+
+          for (i = 0; i < acc.length; i++) {
+              acc[i].addEventListener("click", function() {
+                  this.classList.toggle("active");
+                  var panel = this.nextElementSibling;
+                  if (panel.style.display === "block") {
+                      panel.style.display = "none";
+                  } else {
+                      panel.style.display = "block";
+                  }
+              });
+          }
+          </script>
+
+
       <div class="row">
             <div class="col-xs-4 col-sm-4 col-md-4">
               <div class ="form-group">
