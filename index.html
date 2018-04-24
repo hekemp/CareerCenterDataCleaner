@@ -149,6 +149,10 @@
 
   var names;
 
+  function strCompare(a, b) { // Removes speical characters, staring and ending spaces, and extra spaces for ignoring case comparison
+    return a.replace(/[^A-Za-z0-9\s]/g, "").replace(/\s*/g, " ").toLowerCase().trim() === b.replace(/[^A-Za-z0-9\s]/g, "").replace(/\s*/g, " ").toLowerCase().trim();
+  }
+
   function abortRead() {
     reader.abort();
   }
@@ -369,7 +373,7 @@
       }
 
       for(var i = 0; i < keyInList.length; i++){
-        if(keyInList[i][0] == companyPicked){
+        if(strCompare(keyInList[i][0], companyPicked)){
           keyInList[i][keyInList[i].length] = names[index];
           i = keyInList.length;
         }
@@ -433,11 +437,13 @@
       document.getElementById("instruction").innerHTML = '<h3 id="instruction" class="text-muted">Select a canonical company name:</h3>';
     }
 
+
+
     function findValue(itemToLocate){
 
       for(var i = 0; i < keyInList.length; i++) {
         for(var j = 0; j < keyInList[i].length; j++){
-          if (keyInList[i][j] == itemToLocate){
+          if (strCompare(keyInList[i][j], itemToLocate)){
             return keyInList[i][0];
           }
         }
