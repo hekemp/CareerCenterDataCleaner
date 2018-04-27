@@ -449,7 +449,7 @@
       } else {
         keyInList[keyInList.length] = [ theirValue ];
 
-      } 
+      }
       populateChoices();
       var newIndex;
       for(var i = 0; i < toAssign[names[index]].length; i++){
@@ -550,6 +550,12 @@
         splitByComma[i] = splitByLine[i].split(',');
 
       }
+      for(var i = 0; i < splitByComma.length; i++){
+        for (var j = 0; j < splitByComma[i].length; j++){
+          splitByComma[i][j] = splitByComma[i][j].trim().replace(/^[^A-Za-z0-9\s]*/g, "").replace(/[^A-Za-z0-9\s]*$/g, "").replace(/\s+/g, " ");
+        }
+      }
+
       readInList = splitByComma;
 
     }
@@ -560,6 +566,11 @@
       for(var i = 0; i < splitByLine.length; i++){
         splitByComma[i] = splitByLine[i].split(',');
 
+      }
+      for(var i = 0; i < splitByComma.length; i++){
+        for (var j = 0; j < splitByComma[i].length; j++){
+          splitByComma[i][j] = splitByComma[i][j].trim().replace(/^[^A-Za-z0-9\s]*/g, "").replace(/[^A-Za-z0-9\s]*$/g, "").replace(/\s+/g, " ");
+        }
       }
       keyInList = splitByComma;
 
