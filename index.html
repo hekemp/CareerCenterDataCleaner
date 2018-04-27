@@ -443,15 +443,21 @@
 
       document.getElementById("errorMessage").innerHTML = "&nbsp;"
       var theirValue = document.getElementById("customInput").value;
-      keyInList[keyInList.length] = [ theirValue ];
-      populateChoices();
+      var foundValue = findValue(theirValue);
+      if(findValue(theirValue) != ""){
+        theirValue = foundValue;
+      } else {
+        keyInList[keyInList.length] = [ theirValue ];
 
+      } 
+      populateChoices();
       var newIndex;
       for(var i = 0; i < toAssign[names[index]].length; i++){
-
         newIndex = toAssign[names[index]][i];
         readInList[newIndex][columnChanging] = theirValue;
       }
+
+
 
       if(index < names.length - 1) {
         index++;
