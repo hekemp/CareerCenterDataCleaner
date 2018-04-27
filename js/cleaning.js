@@ -157,10 +157,6 @@
   document.getElementById('files').addEventListener('change', handleFileSelect, false);
   document.getElementById('keys').addEventListener('change', handleKeysSelect, false);
 
-
-
-  //download(reader.result, "test", "text/csv");
-
   function download(data, filename, type) {
     var file = new Blob([data], {type: type});
     if (window.navigator.msSaveOrOpenBlob) // IE10+
@@ -254,13 +250,6 @@
         }
       }
     }
-
-    /*
-      To Get Items:
-      for(item in toAssign){
-        console.log(toAssign[item]);
-      }
-    */
 
     function assignKeysToNames(){
       names = [];
@@ -462,8 +451,8 @@
       var fileName = document.getElementById("FileName").value;
 
       if(fileName == ""){
-        document.getElementById("errorMessage").innerHTML = "No input file was uploaded.";
-      } else if ( readInList == [] || readInList == null ) {
+        document.getElementById("errorMessage").innerHTML = "No file name was given.";
+      } else if ( isEmpty(readInList) ) {
         document.getElementById("errorMessage").innerHTML = "No input file was uploaded.";
       }
       else {
@@ -475,7 +464,12 @@
 
     function downloadKeyFile(){
       var fileName = document.getElementById("KeyFileName").value;
-      if(fileName != "" && ( keyInList != [] && keyInList != null ) ) {
+      if(fileName == ""){
+        document.getElementById("errorMessage").innerHTML = "No key file name was given.";
+      } else if ( isEmpty(keyInList) ) {
+        document.getElementById("errorMessage").innerHTML = "No key file was uploaded.";
+      } else {
+        document.getElementById("errorMessage").innerHTML = "&nbsp;";
         var newText = reassembleKeyText();
         download(newText, fileName, "text/csv");
       }
