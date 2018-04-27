@@ -103,6 +103,7 @@
                 <label>Input File</label>
                 <input type="file" id="files" name="file" />
                 <small id="inputHelp" class="form-text text-muted">Accepted File Types: .csv</small>
+                <button type="button" class="btn btn-primary btn-block" onclick="resetInput();">Restore to file contents</button>
               </div>
             </div>
             <div class="col-xs-4 col-sm-4 col-md-4">
@@ -110,6 +111,7 @@
                 <label>Key File</label>
                 <input type="file" id="keys" name="key" />
                 <small id="keysHelp" class="form-text text-muted">Accepted File Types: .csv</small>
+                <button type="button" class="btn btn-primary btn-block" onclick="resetKeys();">Restore to key file contents</button>
               </div>
             </div>
             <div class="col-xs-4 col-sm-4 col-md-4">
@@ -128,6 +130,7 @@
         <div class="row">
           <div class="col-lg-12">
               <button type="button" class="btn btn-primary btn-block" onclick="startCleaning();">Start Cleaning</button>
+              <p class="error" id="errorMessage">&nbsp;</p>
           </div>
         </div>
 
@@ -147,10 +150,42 @@
   var toAssign = {};
   var index = 0;
 
+  var cleaningStarted = false;
+
   var names;
 
   function strCompare(a, b) { // Removes speical characters, staring and ending spaces, and extra spaces for ignoring case comparison
-    return a.replace(/[^A-Za-z0-9\s]/g, "").replace(/\s*/g, " ").toLowerCase().trim() === b.replace(/[^A-Za-z0-9\s]/g, "").replace(/\s*/g, " ").toLowerCase().trim();
+    let s1 = a.replace(/[^A-Za-z0-9\s]/g, "").replace(/\s*/g, " ").toLowerCase().trim();
+    let s2 = b.replace(/[^A-Za-z0-9\s]/g, "").replace(/\s*/g, " ").toLowerCase().trim();
+    return s1.localeCompare(s2);
+  }
+
+  function resetKeys(){
+    if(keyText != null){
+      document.getElementById("errorMessage").innerHTML = "&nbsp;"
+      breakKeyText();
+      if(cleaningStarted){
+        startCleaning();
+      }
+    }
+    else{
+      document.getElementById("errorMessage").innerHTML = "No key file was uploaded."
+    }
+
+  }
+
+  function resetInput(){
+    if(readText != null){
+      document.getElementById("errorMessage").innerHTML = "&nbsp;"
+      breakReadText();
+      if (cleaningStarted) {
+        startCleaning();
+      }
+    } else {
+      document.getElementById("errorMessage").innerHTML = "No input file was uploaded."
+    }
+
+
   }
 
   function abortRead() {
@@ -160,15 +195,16 @@
   function errorHandler(evt) {
     switch(evt.target.error.code) {
       case evt.target.error.NOT_FOUND_ERR:
-        alert('File Not Found!');
+        document.getElementById("errorMessage").innerHTML = "File was not found.";
         break;
       case evt.target.error.NOT_READABLE_ERR:
+        document.getElementById("errorMessage").innerHTML = "File was not able to be read.";
         alert('File is not readable');
         break;
       case evt.target.error.ABORT_ERR:
         break; // noop
       default:
-        alert('An error occurred reading this file.');
+        document.getElementById("errorMessage").innerHTML = "There was an error reading this file.";
     };
   }
 
@@ -193,7 +229,7 @@
     reader.onerror = errorHandler;
     reader.onprogress = updateProgress;
     reader.onabort = function(e) {
-      alert('File read cancelled');
+      document.getElementById("errorMessage").innerHTML = "File read was cancelled";
     };
     reader.onloadstart = function(e) {
       document.getElementById('progress_bar').className = 'loading';
@@ -229,7 +265,7 @@
     reader.onerror = errorHandler;
     reader.onprogress = updateProgress;
     reader.onabort = function(e) {
-      alert('File read cancelled');
+      document.getElementById("errorMessage").innerHTML = "File read was cancelled";
     };
     reader.onloadstart = function(e) {
       document.getElementById('progress_bar').className = 'loading';
@@ -300,6 +336,7 @@
       foundKeyValues = {};
       toAssign = {};
       index = 0;
+      cleaningStarted = true;
 
       names = [];
 
@@ -308,8 +345,17 @@
 
       columnChanging = [ columnToChange ].map(mapLetterValue)[0] - 1;
 
-      if(readText != null && keyText != null && columnChanging != null ){
+      if(readText == null){
+        document.getElementById("errorMessage").innerHTML = "No input file was uploaded."
+      }
+      else if (keyText == null) {
+        document.getElementById("errorMessage").innerHTML = "No key file was uploaded."
+      } else if (columnToChange == "") {
+        document.getElementById("errorMessage").innerHTML = "No column to clean was selected."
 
+      } else {
+
+        document.getElementById("errorMessage").innerHTML = "&nbsp;"
         var currentValue;
         for(var i = 1; i < readInList.length; i++) {
           currentValue = readInList[i][columnChanging];
@@ -319,6 +365,7 @@
             readInList[i][columnChanging] = foundKeyValues[currentValue];
           } else {
               var locatedValue = findValue(currentValue);
+
               if (locatedValue != ""){ // Item was assigned a value
                 foundKeyValues[currentValue] = locatedValue;
                 readInList[i][columnChanging] = locatedValue;
@@ -333,19 +380,16 @@
               }
           }
         }
+        assignKeysToNames();
+
+        if(isEmpty(toAssign)){
+          $("#name-chooser").text("Cleaning complete!");
+        }
+        else{
+          $("#name-chooser").text(names[0]);
+          populateChoices();
+        }
       }
-
-      assignKeysToNames();
-
-      if(isEmpty(toAssign)){
-        $("#name-chooser").text("Cleaning complete!");
-      }
-      else{
-        $("#name-chooser").text(names[0]);
-        populateChoices();
-      }
-
-
     }
 
     /*
@@ -364,8 +408,7 @@
 
     function nextChoice(companyPicked) {
 
-      console.log(toAssign);
-      console.log(toAssign[names[index]]);
+      document.getElementById("errorMessage").innerHTML = "&nbsp;"
       var newIndex;
       for(var i = 0; i < toAssign[names[index]].length; i++){
         newIndex = toAssign[names[index]][i];
@@ -373,7 +416,7 @@
       }
 
       for(var i = 0; i < keyInList.length; i++){
-        if(strCompare(keyInList[i][0], companyPicked)){
+        if(strCompare(keyInList[i][0], companyPicked) == 0){
           keyInList[i][keyInList[i].length] = names[index];
           i = keyInList.length;
         }
@@ -382,20 +425,23 @@
       if(index < names.length - 1) {
         index++;
         $("#name-chooser").text(names[index]);
+        document.getElementById("customInput").value  = "";
       } else {
         $("#name-chooser").text("You're Done!");
         toAssign = {}
         index = 0;
         document.getElementById("choices").innerHTML = "";
+        document.getElementById("custom").innerHTML = "";
         document.getElementById("instruction").innerHTML = '<h3 id="instruction" class="text-muted">Download your files now, or continue cleaning.</h3>';
 
       }
-      console.log(readInList);
+
       return false;
     }
 
     function nextChoiceAdd() {
 
+      document.getElementById("errorMessage").innerHTML = "&nbsp;"
       var theirValue = document.getElementById("customInput").value;
       keyInList[keyInList.length] = [ theirValue ];
       populateChoices();
@@ -406,7 +452,6 @@
         newIndex = toAssign[names[index]][i];
         readInList[newIndex][columnChanging] = theirValue;
       }
-      console.log(theirValue);
 
       if(index < names.length - 1) {
         index++;
@@ -416,6 +461,7 @@
         toAssign = {}
         index = 0;
         document.getElementById("choices").innerHTML = "";
+        document.getElementById("custom").innerHTML = "";
         document.getElementById("instruction").innerHTML = '<h3 id="instruction" class="text-muted">Download your files now, or continue cleaning.</h3>';
       }
 
@@ -426,24 +472,63 @@
 
     function populateChoices(){
       document.getElementById("choices").innerHTML = "";
-      for(var i = 0; i < keyInList.length; i++){
-        if(keyInList[i][0] != ""){
-          document.getElementById("choices").innerHTML += '<div class="form-group"><button class="btn" onclick="return nextChoice(\'' + keyInList[i][0] + '\');">' + keyInList[i][0] + '</button></div>';
+      var sortedKeys = keyInList.slice().sort(function (a, b) {
+        return strCompare(a[0], b[0]);
+      });
+      for(var i = 0; i < sortedKeys.length; i++){
+        if(sortedKeys[i][0] != ""){
+          document.getElementById("choices").innerHTML += '<div class="form-group" style="padding:1% 3% .25% 3%"><button class="btn" onclick="return nextChoice(\'' + sortedKeys[i][0] + '\');">' + sortedKeys[i][0] + '</button></div>';
         }
 
       }
 
-      document.getElementById("choices").innerHTML += '<div class="form-group"><label for="customInput">Company Name:</label><input type="text" class="form-control" id="customInput" placeholder="New company name" /></div><button class="btn btn-primary" onclick="return nextChoiceAdd();">Submit</button>';
+      document.getElementById("custom").innerHTML = '<div class="form-group"><label for="customInput">Company Name:</label><input type="text" class="form-control" id="customInput" placeholder="New company name" onInput="displayFilteredChoices()" /></div><button class="btn btn-primary" onclick="return nextChoiceAdd();">Submit</button>';
       document.getElementById("instruction").innerHTML = '<h3 id="instruction" class="text-muted">Select a canonical company name:</h3>';
     }
 
+    function substringComparison(a, b, chars){
+
+      if(chars > b.length){ // if a is longer than b, it can't be b
+        return false;
+      }
+      if (a.trim().length != a.length){ // Handles surrounding white spaces that might have slipped by
+        chars = a.trim().length;
+      }
+
+      let s1 = a.replace(/[^A-Za-z0-9\s]/g, "").replace(/\s*/g, "").toLowerCase().trim().substring(0, chars);
+      let s2 = b.replace(/[^A-Za-z0-9\s]/g, "").replace(/\s*/g, "").toLowerCase().trim();
+
+      return s2.includes(s1);
+    }
+
+    function displayFilteredChoices(){
+      document.getElementById("choices").innerHTML = "";
+      var theirValue = document.getElementById("customInput").value;
+      var filteredKeys = [];
+      for (var i = 0; i < keyInList.length; i++){
+        if(substringComparison(theirValue, keyInList[i][0], theirValue.replace(/[^A-Za-z0-9\s]/g, "").replace(/\s*/g, "").trim().length)){
+          filteredKeys[filteredKeys.length] = keyInList[i][0];
+        }
+      }
+      var sortedKeys = filteredKeys.slice().sort(function (a, b) {
+        return strCompare(a, b);
+      });
+      for(var i = 0; i < sortedKeys.length; i++){
+        if(sortedKeys[i] != ""){
+          document.getElementById("choices").innerHTML += '<div class="form-group" style="padding:1% 3% .25% 3%"><button class="btn" onclick="return nextChoice(\'' + sortedKeys[i] + '\');">' + sortedKeys[i] + '</button></div>';
+        }
+
+      }
+
+      document.getElementById("instruction").innerHTML = '<h3 id="instruction" class="text-muted">Select a canonical company name:</h3>';
+    }
 
 
     function findValue(itemToLocate){
 
       for(var i = 0; i < keyInList.length; i++) {
         for(var j = 0; j < keyInList[i].length; j++){
-          if (strCompare(keyInList[i][j], itemToLocate)){
+          if (strCompare(keyInList[i][j], itemToLocate) == 0){
             return keyInList[i][0];
           }
         }
@@ -492,8 +577,17 @@
     }
 
     function downloadFile(){
+
+
       var fileName = document.getElementById("FileName").value;
-      if(fileName != "" && ( readInList != [] && readInList != null ) ) {
+
+      if(fileName == ""){
+        document.getElementById("errorMessage").innerHTML = "No input file was uploaded.";
+      } else if ( readInList == [] || readInList == null ) {
+        document.getElementById("errorMessage").innerHTML = "No input file was uploaded.";
+      }
+      else {
+        document.getElementById("errorMessage").innerHTML = "&nbsp;";
         var newText = reassembleReadText();
         download(newText, fileName, "text/csv");
       }
@@ -513,10 +607,12 @@
   <form>
     <h1 id="name-chooser"></h1>
     <h3 id="instruction" class="text-muted"></h3>
-    <div id="choices">
+    <div id="choices" class="choicesBox">
 
     </div>
+    <div id="custom">
 
+    </div>
   </form>
 </div>
 

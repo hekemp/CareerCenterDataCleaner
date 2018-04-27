@@ -18,6 +18,11 @@
   width: 0;
 }
 
+.error {
+  padding: 2%;
+  color: red;
+}
+
 .banner {
   display: block;
   padding: 2%;
@@ -64,4 +69,24 @@ body {
     display: none;
     background-color: white;
     overflow: hidden;
+}
+
+.choicesBox {
+  overflow: auto;
+  height: 5%;
+  max-height: 400px;
+  overflow-y:scroll;
+  box-shadow: 0 2px 4px 0 rgba(0,0,0,0.4);
+  padding: 0%;
+}
+
+::-webkit-scrollbar {
+  -webkit-appearance: none;
+  background-color: rgba(0, 0, 0, .1);
+  width: 7px;
+}
+::-webkit-scrollbar-thumb {
+  border-radius: 4px;
+  background-color: rgba(0, 0, 0, .5);
+  -webkit-box-shadow: 0 0 1px rgba(255, 255, 255, .5);
 }
